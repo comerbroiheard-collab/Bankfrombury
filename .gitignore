@@ -1,0 +1,7 @@
+node_modules/
+data/*.json
+data/*.tmp
+data/*.corrupt-*
+*.log
+.DS_Store
+.env

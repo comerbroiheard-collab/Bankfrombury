@@ -1,0 +1,19 @@
+{
+  "name": "vaivaibank-buryatia",
+  "version": "1.0.0",
+  "description": "VaivaiBank Buryatia — a double-entry bank with instant funds, multi-currency accounts, cards, Baikal vaults, credit and standing orders. Zero dependencies.",
+  "main": "src/server.js",
+  "bin": { "vvb": "bin/vvb.js" },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node bin/seed.js",
+    "demo": "node bin/seed.js && node src/server.js",
+    "test": "node --test \"test/*.test.js\"",
+    "audit:ledger": "node -e \"const{Store}=require('./src/store');const{Bank}=require('./src/bank');const s=new Store(process.env.VVB_DATA||'./data/bank.json');console.log(JSON.stringify(new Bank({store:s}).ledger.audit(),null,2))\""
+  },
+  "engines": { "node": ">=20" },
+  "keywords": ["bank", "ledger", "double-entry", "buryatia", "fintech", "demo"],
+  "license": "MIT",
+  "private": true
+}

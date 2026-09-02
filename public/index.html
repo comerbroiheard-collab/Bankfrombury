@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>VaivaiBank Buryatia · Ваивай Банк</title>
+<meta name="description" content="VaivaiBank Buryatia — instant funds, multi-currency accounts, cards, Baikal vaults and a double-entry ledger you can audit." />
+<meta name="theme-color" content="#0b141c" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b141c'/%3E%3Cpath d='M16 6l3 6 6-2-3 7 3 7-6-2-3 6-3-6-6 2 3-7-3-7 6 2z' fill='%23e8b53c'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-palette="#3987e5,#d95926,#199e70,#c98500,#d55181,#008300,#9085e9,#e66767">
+
+<div id="gate" class="gate">
+  <div class="gate-art" aria-hidden="true">
+    <svg viewBox="0 0 200 200" class="soyombo">
+      <circle cx="100" cy="100" r="86" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".35"/>
+      <path d="M100 26l10 22 22-8-8 22 22 10-22 10 8 22-22-8-10 22-10-22-22 8 8-22-22-10 22-10-8-22 22 8z"/>
+      <circle cx="100" cy="100" r="17" fill="none" stroke="currentColor" stroke-width="3"/>
+      <path d="M100 83a8.5 8.5 0 000 17 8.5 8.5 0 010 17z" opacity=".8"/>
+    </svg>
+  </div>
+  <div class="gate-panel">
+    <p class="eyebrow">Республика Бурятия · Улаан-Үдэ</p>
+    <h1>VaivaiBank<span>Buryatia</span></h1>
+    <p class="tagline">Сагай ошохо, мүнгэнэй ерэхэ — time passes, money arrives. Instant funds, six currencies, and a ledger that always balances.</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" data-gate-tab="join" role="tab">Open an account</button>
+      <button class="tab" data-gate-tab="signin" role="tab">Sign in</button>
+    </div>
+
+    <form id="join-form" class="gate-form" data-gate-panel="join">
+      <label>Your name<input name="name" required minlength="2" placeholder="Bair Dorzhiev" autocomplete="name" /></label>
+      <label>Handle<span class="prefix-input"><i>@</i><input name="handle" required pattern="[a-z0-9_]{3,20}" placeholder="bair" autocomplete="username" /></span></label>
+      <div class="row">
+        <label>City<input name="city" value="Ulan-Ude" /></label>
+        <label>PIN<input name="pin" type="password" inputmode="numeric" pattern="\d{4,6}" placeholder="4 digits" autocomplete="new-password" /></label>
+      </div>
+      <button class="btn btn-primary" type="submit">Open my account</button>
+      <p class="hint">You get a ruble current account, a virtual card and a ₽50 000 instant-funds allowance on day one.</p>
+    </form>
+
+    <form id="signin-form" class="gate-form is-hidden" data-gate-panel="signin">
+      <label>Handle<span class="prefix-input"><i>@</i><input name="handle" required placeholder="bair" autocomplete="username" /></span></label>
+      <label>PIN<input name="pin" type="password" inputmode="numeric" placeholder="leave blank if none" autocomplete="current-password" /></label>
+      <button class="btn btn-primary" type="submit">Sign in</button>
+      <p class="hint" id="directory-hint"></p>
+    </form>
+    <p class="gate-error" id="gate-error" role="alert"></p>
+  </div>
+</div>
+
+<div id="app" class="app is-hidden">
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" class="mark" aria-hidden="true"><path d="M16 3l4 8 8-3-4 8 4 8-8-3-4 8-4-8-8 3 4-8-4-8 8 3z"/></svg>
+      <div>
+        <strong>VaivaiBank</strong>
+        <small>Buryatia · Буряад</small>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="networth">
+        <small>Total balance</small>
+        <b id="networth">—</b>
+      </div>
+      <button class="chip" id="tier-chip" type="button" title="Loyalty tier">—</button>
+      <button class="btn btn-ghost" id="signout" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <nav class="rail" id="rail">
+    <button class="rail-btn is-active" data-view="home"><span>◈</span>Home</button>
+    <button class="rail-btn" data-view="send"><span>➔</span>Send</button>
+    <button class="rail-btn" data-view="cards"><span>▭</span>Cards</button>
+    <button class="rail-btn" data-view="save"><span>◇</span>Save</button>
+    <button class="rail-btn" data-view="borrow"><span>◐</span>Borrow</button>
+    <button class="rail-btn" data-view="activity"><span>≡</span>Activity</button>
+    <button class="rail-btn" data-view="bank"><span>⌂</span>Bank</button>
+  </nav>
+
+  <main id="main"></main>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>
