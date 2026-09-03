@@ -41,8 +41,12 @@ function createServer({ dataFile = null, rates = new RateBoard(), now = undefine
 
     if (req.method === 'GET' || req.method === 'HEAD') {
       if (serveStatic(req, res, url.pathname)) return;
-      // Unknown non-API path: hand back the app shell.
-      if (serveStatic(req, res, '/')) return;
+      // Unknown path: hand back the app shell, but only for page-like requests.
+      // A missing asset or an API-shaped path must fail honestly instead of
+      // returning HTML that the caller will try to parse as JSON or script.
+      const isAsset = /\.[a-z0-9]+$/i.test(url.pathname);
+      const isApiShaped = url.pathname.includes('/api/');
+      if (!isAsset && !isApiShaped && serveStatic(req, res, '/')) return;
     }
 
     json(res, 404, { error: 'not_found', message: 'Nothing here' });
@@ -61,6 +65,9 @@ function start({ port = Number(process.env.PORT) || 4173, host = process.env.HOS
       `\n  VaivaiBank Buryatia · Ваивай Банк Буряад\n` +
       `  ---------------------------------------\n` +
       `  Branch open at http://${host}:${address.port}\n` +
+      (host === '127.0.0.1' || host === 'localhost'
+        ? `  (this machine only — set HOST=0.0.0.0 to reach it from elsewhere)\n`
+        : '') +
       `  Ledger: ${file || 'in memory only'}\n` +
       `  Health: http://${host}:${address.port}/api/health\n\n`,
     );

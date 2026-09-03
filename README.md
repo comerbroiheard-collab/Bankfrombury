@@ -14,6 +14,11 @@ npm run demo     # seed a week of branch activity, then open the branch
 # → http://127.0.0.1:4173     sign in as @bair, PIN 1957
 ```
 
+The Node server serves **both** the page and the API. Opening `public/index.html`
+through a plain file server (or `python3 -m http.server`) loads the interface but
+leaves it with nothing to talk to — the app says so and tells you what to run.
+To reach the branch from another machine, bind it outward: `HOST=0.0.0.0 npm start`.
+
 ---
 
 ## What it does

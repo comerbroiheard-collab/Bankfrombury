@@ -210,3 +210,23 @@ test('the app shell and its assets are served', async (t) => {
   });
   assert.ok(!leaked.includes('vaivaibank-buryatia'), 'path traversal cannot read files outside public/');
 });
+
+test('paths that are not pages fail honestly instead of returning the shell', async (t) => {
+  const b = await branch();
+  t.after(b.close);
+
+  // A page-like path still gets the app shell, so deep links work.
+  const page = await fetch(`${b.base}/somewhere`);
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /VaivaiBank/);
+
+  // A missing asset must 404, not hand back HTML the browser would try to run.
+  const asset = await fetch(`${b.base}/missing.js`);
+  assert.equal(asset.status, 404);
+
+  // An API-shaped path under a prefix must not answer with the shell either:
+  // that is what turns "the API is not here" into a confusing parse error.
+  const prefixed = await fetch(`${b.base}/preview/4173/api/meta`);
+  assert.equal(prefixed.status, 404);
+  assert.equal((await prefixed.json()).error, 'not_found');
+});

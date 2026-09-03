@@ -15,23 +15,40 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
 /* ---------------- api ---------------- */
 
+/* The API lives beside this page rather than at the site root, so the app also
+   works when it is mounted under a path (a preview proxy, a sub-directory). */
+const API_BASE = new URL('api/', document.baseURI);
+const apiUrl = (path) => new URL(String(path).replace(/^\//, ''), API_BASE);
+
 async function api(path, { method = 'GET', body = null } = {}) {
-  const res = await fetch(`/api${path}`, {
-    method,
-    headers: {
-      'content-type': 'application/json',
-      ...(S.token ? { authorization: `Bearer ${S.token}` } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const payload = await res.json().catch(() => ({}));
+  const url = apiUrl(path);
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: {
+        'content-type': 'application/json',
+        ...(S.token ? { authorization: `Bearer ${S.token}` } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (cause) {
+    // No response at all: wrong host or port, or nothing listening.
+    const err = new Error(`Could not reach the bank at ${url.origin}`);
+    err.code = 'unreachable';
+    throw err;
+  }
+
+  const payload = await res.json().catch(() => null);
   if (!res.ok) {
-    const err = new Error(payload.message || `Request failed (${res.status})`);
-    err.code = payload.error;
+    const err = new Error(payload?.message || `Request failed (${res.status})`);
+    // A 404 that is not one of our JSON errors means these pages are being
+    // served by something that is not the bank -- a plain file server.
+    err.code = payload?.error || (res.status === 404 ? 'no_api' : 'http_error');
     err.status = res.status;
     throw err;
   }
-  return payload;
+  return payload ?? {};
 }
 
 /* ---------------- formatting ---------------- */
@@ -868,6 +885,33 @@ document.addEventListener('submit', async (event) => {
   }
 });
 
-boot().catch((err) => {
-  document.body.innerHTML = `<p style="padding:40px;color:#e66767">The branch is closed: ${esc(err.message)}</p>`;
-});
+/** The app is a client for its own API; explain plainly when that is missing. */
+function bootFailure(err) {
+  const advice = {
+    no_api: `These pages loaded, but no VaivaiBank API answered at <code>${esc(apiUrl('/meta').href)}</code>.
+             The app cannot run from a plain file server &mdash; it needs its own bank behind it.`,
+    unreachable: `Nothing answered at <code>${esc(apiUrl('/meta').origin)}</code>.`,
+  }[err.code] || esc(err.message);
+
+  document.body.innerHTML = `
+    <div style="min-height:100vh;display:grid;place-items:center;padding:6vw;
+                font:15px/1.6 ui-sans-serif,system-ui,sans-serif;color:#f2f7f8;background:#0b141c">
+      <div style="max-width:560px">
+        <p style="color:#e8b53c;letter-spacing:.18em;text-transform:uppercase;font-size:12px;margin:0 0 10px">
+          VaivaiBank Buryatia
+        </p>
+        <h1 style="font-size:30px;margin:0 0 14px">The branch is closed</h1>
+        <p style="color:#a8bcc6;margin:0 0 18px">${advice}</p>
+        <p style="color:#a8bcc6;margin:0 0 8px">Open the branch from the project root:</p>
+        <pre style="background:#111d27;border:1px solid #243c49;border-radius:10px;padding:14px;
+                    font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#a8bcc6;overflow-x:auto"
+        >npm start          <span style="color:#6f8894"># or: npm run demo, for a seeded branch</span></pre>
+        <p style="color:#6f8894;font-size:13px;margin:16px 0 0">
+          Then open the address it prints (http://127.0.0.1:4173 by default) &mdash; that server
+          serves this page <em>and</em> the API. Set <code>HOST=0.0.0.0</code> to reach it from another machine.
+        </p>
+      </div>
+    </div>`;
+}
+
+boot().catch(bootFailure);
